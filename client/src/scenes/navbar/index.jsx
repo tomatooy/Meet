@@ -20,44 +20,37 @@ import {
   Menu,
   Close,
 } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setMode, setLogout } from "state";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import FlexBetween from "components/FlexBetween";
+import UserImage from "components/UserImage";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isMobileMenuToggled, setIsMobileMenuToggled] = useState(false);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const user = useSelector((state) => state.user);
+  const user = useSelector((state) => state.auth.user);
+  const icon = useSelector((state) => state.auth.user.picturePath)
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
 
   const theme = useTheme();
   const neutralLight = theme.palette.neutral.light;
   const dark = theme.palette.neutral.dark;
   const background = theme.palette.background.default;
-  const primaryLight = theme.palette.primary.light;
   const alt = theme.palette.background.alt;
 
   const fullName = `${user.firstName} ${user.lastName}`;
 
   return (
-    <FlexBetween padding="1rem 6%" backgroundColor={alt}>
+    <FlexBetween padding="1rem 6%" backgroundColor={alt} marginBottom="1rem">
       <FlexBetween gap="1.75rem">
-        <Typography
-          fontWeight="bold"
-          fontSize="clamp(1rem, 2rem, 2.25rem)"
-          color="primary"
-          onClick={() => navigate("/home")}
-          sx={{
-            "&:hover": {
-              color: primaryLight,
-              cursor: "pointer",
-            },
-          }}
-        >
-          Sociopedia
-        </Typography>
+        <IconButton onClick={() => { navigate('/home') }} style={{ backgroundColor: 'transparent' }}>
+          <img src="/logo.png" style={theme.logo.img} alt='logo' />
+          <UserImage image={icon} size="55px" />
+        </IconButton>
+
         {isNonMobileScreens && (
           <FlexBetween
             backgroundColor={neutralLight}
@@ -75,17 +68,25 @@ const Navbar = () => {
 
       {/* DESKTOP NAV */}
       {isNonMobileScreens ? (
-        <FlexBetween gap="2rem">
-          <IconButton onClick={() => dispatch(setMode())}>
+        <FlexBetween gap="2rem" color="dark">
+          <IconButton onClick={() => dispatch(setMode())} >
             {theme.palette.mode === "dark" ? (
               <DarkMode sx={{ fontSize: "25px" }} />
             ) : (
               <LightMode sx={{ color: dark, fontSize: "25px" }} />
             )}
           </IconButton>
-          <Message sx={{ fontSize: "25px" }} />
-          <Notifications sx={{ fontSize: "25px" }} />
-          <Help sx={{ fontSize: "25px" }} />
+          <IconButton onClick={() => { navigate('/message') }}>
+            <Message
+              sx={{ color: dark, fontSize: "25px" }} />
+          </IconButton>
+          <IconButton>
+            <Notifications sx={{ color: dark, fontSize: "25px" }} />
+          </IconButton>
+          <IconButton>
+            <Help sx={{ color: dark, fontSize: "25px" }} />
+          </IconButton>
+
           <FormControl variant="standard" value={fullName}>
             <Select
               value={fullName}
@@ -158,7 +159,9 @@ const Navbar = () => {
                 <LightMode sx={{ color: dark, fontSize: "25px" }} />
               )}
             </IconButton>
-            <Message sx={{ fontSize: "25px" }} />
+            <IconButton>
+              <Message sx={{ fontSize: "25px" }} />
+            </IconButton>
             <Notifications sx={{ fontSize: "25px" }} />
             <Help sx={{ fontSize: "25px" }} />
             <FormControl variant="standard" value={fullName}>

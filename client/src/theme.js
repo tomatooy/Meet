@@ -1,4 +1,6 @@
+
 // color design tokens export
+
 export const colorTokens = {
   grey: {
     0: "#FFFFFF",
@@ -16,16 +18,16 @@ export const colorTokens = {
     1000: "#000000",
   },
   primary: {
-    50: "#E6FBFF",
-    100: "#CCF7FE",
-    200: "#99EEFD",
-    300: "#66E6FC",
-    400: "#33DDFB",
-    500: "#00D5FA",
-    600: "#00A0BC",
-    700: "#006B7D",
-    800: "#00353F",
-    900: "#001519",
+    0: "#ffffff",
+    100: "#f7f7f7",
+    200: "#f7f7f7",
+    300: "#dedede",
+    400: "#dedede",
+    500: "#8c8c8c",
+    600: "#8c8c8c",
+    700: "#4a4a4a",
+    800: "#4a4a4a",
+    900: "#000000",
   },
 };
 
@@ -36,43 +38,46 @@ export const themeSettings = (mode) => {
       mode: mode,
       ...(mode === "dark"
         ? {
-            // palette values for dark mode
-            primary: {
-              dark: colorTokens.primary[200],
-              main: colorTokens.primary[500],
-              light: colorTokens.primary[800],
-            },
-            neutral: {
-              dark: colorTokens.grey[100],
-              main: colorTokens.grey[200],
-              mediumMain: colorTokens.grey[300],
-              medium: colorTokens.grey[400],
-              light: colorTokens.grey[700],
-            },
-            background: {
-              default: colorTokens.grey[900],
-              alt: colorTokens.grey[800],
-            },
-          }
+          // palette values for dark mode
+          primary: {
+            dark: colorTokens.primary[700],
+            main: colorTokens.primary[500],
+            light: colorTokens.primary[300],
+            word: colorTokens.primary[0]
+          },
+          neutral: {
+            dark: colorTokens.grey[100],
+            main: colorTokens.grey[200],
+            mediumMain: colorTokens.grey[300],
+            medium: colorTokens.grey[400],
+            light: colorTokens.grey[700],
+          },
+          background: {
+            default: colorTokens.grey[900],
+            alt: colorTokens.grey[800],
+          },
+        }
         : {
-            // palette values for light mode
-            primary: {
-              dark: colorTokens.primary[700],
-              main: colorTokens.primary[500],
-              light: colorTokens.primary[50],
-            },
-            neutral: {
-              dark: colorTokens.grey[700],
-              main: colorTokens.grey[500],
-              mediumMain: colorTokens.grey[400],
-              medium: colorTokens.grey[300],
-              light: colorTokens.grey[50],
-            },
-            background: {
-              default: colorTokens.grey[10],
-              alt: colorTokens.grey[0],
-            },
-          }),
+          // palette values for light mode
+          primary: {
+            dark: colorTokens.primary[700],
+            main: colorTokens.primary[500],
+            light: colorTokens.primary[100],
+            white: colorTokens.primary[0],
+            word: colorTokens.primary[0]
+          },
+          neutral: {
+            dark: colorTokens.grey[700],
+            main: colorTokens.grey[500],
+            mediumMain: colorTokens.grey[400],
+            medium: colorTokens.grey[300],
+            light: colorTokens.grey[50],
+          },
+          background: {
+            default: colorTokens.grey[10],
+            alt: colorTokens.grey[0],
+          },
+        }),
     },
     typography: {
       fontFamily: ["Rubik", "sans-serif"].join(","),
@@ -102,5 +107,87 @@ export const themeSettings = (mode) => {
         fontSize: 14,
       },
     },
+    logo: {
+      img: {
+        maxHeight: "40px",
+        width: "auto"
+      }
+    },
+    message: {
+      liLeft: {
+        float: "left",
+        clear: "both",
+        display:"flex",
+        maxWidth: "50%",
+      },
+      liLeftText:{
+        color: "#292929",
+        backgroundColor: "#E3E2DF",
+        position: "relative",
+        display: "block",
+        height: "auto",
+        width: "auto",
+        wordWrap: "break-word",
+        wordBreak: "keep - all",
+        fontFamily: "sans-serif",
+        textAlign: "left",
+        lineHeight: "1.5em",
+        margin: "2px 10px",
+        padding: "10px",
+        borderRadius: "15px"
+      },
+      liRight: {
+        float: "right",
+        clear: "both",
+        display:"flex",
+        justifyContent: "flex-end",
+        maxWidth: "50%",
+      },
+      liRightText:{
+        color: "#F8F8F8",
+        backgroundColor: "#27AE60",
+        position: "relative",
+        display: "block",
+        height: "auto",
+        width: "auto",
+        wordWrap: "break-word",
+        wordBreak: "keep - all",
+        fontFamily: "sans-serif",
+        textAlign: "left",
+        lineHeight: "1.5em",
+        margin: "2px 10px",
+        padding: "10px",
+        borderRadius: "15px"
+      },
+      messageArea:{
+        maxHeight:"calc(100% - 40px)" ,
+        minHeight:"calc(100% - 40px)",
+        overflowY:"scroll",
+        overflowX:"hidden",
+        backgroundColor:'#f7f7f7',
+        position:"relative"
+      },
+      inputArea:{
+        height: "40px",
+        position: "absolute",
+        bottom:"0",
+        width: "100%",
+
+      }
+      ,
+      inputButton:{
+        width:"10%",
+        height:"100%",
+        float:"right",
+        padding: "0",
+        fontWeight:"bold",
+        border:"none"
+      },
+      dateBreak:{
+        fontSize:"smaller",
+        clear:"both",
+        textAlign:"center",
+      }
+    }
   };
 };

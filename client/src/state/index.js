@@ -7,6 +7,8 @@ const initialState = {
   posts: [],
 };
 
+
+
 export const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -19,6 +21,7 @@ export const authSlice = createSlice({
       state.token = action.payload.token;
     },
     setLogout: (state) => {
+      localStorage.clear();
       state.user = null;
       state.token = null;
     },
@@ -41,6 +44,8 @@ export const authSlice = createSlice({
     },
   },
 });
+
+
 
 export const { setMode, setLogin, setLogout, setFriends, setPosts, setPost } =
   authSlice.actions;

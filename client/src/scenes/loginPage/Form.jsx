@@ -15,6 +15,8 @@ import { useDispatch } from "react-redux";
 import { setLogin } from "state";
 import Dropzone from "react-dropzone";
 import FlexBetween from "components/FlexBetween";
+import io from 'socket.io-client';
+import { setSender } from "state/message";
 
 const registerSchema = yup.object().shape({
   firstName: yup.string().required("required"),
@@ -48,6 +50,7 @@ const initialValuesLogin = {
 
 const Form = () => {
   const [pageType, setPageType] = useState("login");
+  const [message, setMessage] = useState();
   const { palette } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -85,16 +88,30 @@ const Form = () => {
       body: JSON.stringify(values),
     });
     const loggedIn = await loggedInResponse.json();
-    onSubmitProps.resetForm();
-    if (loggedIn) {
+    if (loggedInResponse.status === 200) {
       dispatch(
         setLogin({
           user: loggedIn.user,
           token: loggedIn.token,
         })
       );
+      dispatch(setSender({
+        sender: loggedIn.user._id
+      }));
+      const socket = io("http://localhost:3001");
+      socket.on("connect", () => {
+        console.log(socket.id)
+        if (loggedIn) {
+          socket.emit("add-user", loggedIn.user);
+        }
+      })
       navigate("/home");
     }
+    else {
+      setMessage("Invalid login please try again");
+    }
+
+
   };
 
   const handleFormSubmit = async (values, onSubmitProps) => {
@@ -231,8 +248,7 @@ const Form = () => {
               sx={{ gridColumn: "span 4" }}
             />
           </Box>
-
-          {/* BUTTONS */}
+          {message}
           <Box>
             <Button
               fullWidth
@@ -240,9 +256,10 @@ const Form = () => {
               sx={{
                 m: "2rem 0",
                 p: "1rem",
-                backgroundColor: palette.primary.main,
-                color: palette.background.alt,
-                "&:hover": { color: palette.primary.main },
+                backgroundColor: palette.primary.light,
+                color: palette.primary.dark,
+
+                "&:hover": { backgroundColor: palette.primary.dark, color: palette.primary.word },
               }}
             >
               {isLogin ? "LOGIN" : "REGISTER"}
@@ -250,6 +267,7 @@ const Form = () => {
             <Typography
               onClick={() => {
                 setPageType(isLogin ? "register" : "login");
+                setMessage();
                 resetForm();
               }}
               sx={{
@@ -257,7 +275,7 @@ const Form = () => {
                 color: palette.primary.main,
                 "&:hover": {
                   cursor: "pointer",
-                  color: palette.primary.light,
+                  color: palette.primary.dark
                 },
               }}
             >
