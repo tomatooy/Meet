@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState,useContext,useEffect } from "react";
+import { SocketContext } from "context/socket";
 import {
   Box,
   IconButton,
@@ -22,33 +23,61 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setMode, setLogout } from "state";
+import { setMode, setLogout } from "state/auth";
+import { setChatUi } from "state/ui";
 // import { useNavigate } from "react-router-dom";
 import FlexBetween from "components/FlexBetween";
 import UserImage from "components/UserImage";
+import NotificationBadge from "components/NotificationBadge";
+import { addTotalUnreadMessages, setIncomingMessage } from "state/notification";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [isMobileMenuToggled, setIsMobileMenuToggled] = useState(false);
   const dispatch = useDispatch();
+  const currReceiver = useSelector((state) => state.message.receiver.id)
   const user = useSelector((state) => state.auth.user);
   const icon = useSelector((state) => state.auth.user.picturePath)
+  const chatUiOpen  = useSelector(state => state.ui.chatUi)
+  const totalUnreadMessages = useSelector((state) => state.notification.totalUnread)
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
-
+  const socket = useContext(SocketContext)
   const theme = useTheme();
   const neutralLight = theme.palette.neutral.light;
   const dark = theme.palette.neutral.dark;
   const background = theme.palette.background.default;
   const alt = theme.palette.background.alt;
-
   const fullName = `${user.firstName} ${user.lastName}`;
+  const [totalUnread, setTotalUnread] = useState(0)
+  
+  useEffect(() => {
+    const handleSocketMessage = (data) => {
+      console.log("received")
+      console.log(data.sender !== currReceiver)
+      if (data.sender !== currReceiver) {
+        dispatch(addTotalUnreadMessages());
+        dispatch(setIncomingMessage({id:data.sender}))
+      }
+    };
+    if (socket){
+      socket.on(user._id,(data)=>handleSocketMessage(data));
+    }
+    return () => {
+      socket.off(user._id)
+    }
+  }, [currReceiver,dispatch,socket,user._id])
+
+  useEffect(() => {
+    setTotalUnread(totalUnreadMessages)
+    return () => {
+    }
+  }, [totalUnreadMessages])
 
   return (
     <FlexBetween padding="1rem 6%" backgroundColor={alt} marginBottom="1rem">
       <FlexBetween gap="1.75rem">
         <IconButton onClick={() => { navigate('/home') }} style={{ backgroundColor: 'transparent' }}>
           <img src="/logo.png" style={theme.logo.img} alt='logo' />
-          <UserImage image={icon} size="55px" />
         </IconButton>
 
         {isNonMobileScreens && (
@@ -76,9 +105,10 @@ const Navbar = () => {
               <LightMode sx={{ color: dark, fontSize: "25px" }} />
             )}
           </IconButton>
-          <IconButton onClick={() => { navigate('/message') }}>
+          <IconButton  sx={{backgroundColor:chatUiOpen?background:alt}} onClick={() => {dispatch(setChatUi({open:!chatUiOpen})) }} disabled={chatUiOpen}>
             <Message
               sx={{ color: dark, fontSize: "25px" }} />
+              {totalUnread > 0 && <NotificationBadge number={totalUnread}/>}
           </IconButton>
           <IconButton>
             <Notifications sx={{ color: dark, fontSize: "25px" }} />
@@ -86,7 +116,7 @@ const Navbar = () => {
           <IconButton>
             <Help sx={{ color: dark, fontSize: "25px" }} />
           </IconButton>
-
+          <UserImage image={icon} size="55px" /> 
           <FormControl variant="standard" value={fullName}>
             <Select
               value={fullName}
@@ -108,7 +138,11 @@ const Navbar = () => {
               <MenuItem value={fullName}>
                 <Typography>{fullName}</Typography>
               </MenuItem>
-              <MenuItem onClick={() => dispatch(setLogout())}>Log Out</MenuItem>
+              <MenuItem onClick={() => {
+              socket.emit('user_logout',{id:user._id})
+              socket.disconnect()
+              dispatch(setLogout())
+              }}>Log Out</MenuItem>
             </Select>
           </FormControl>
         </FlexBetween>
@@ -185,7 +219,10 @@ const Navbar = () => {
                 <MenuItem value={fullName}>
                   <Typography>{fullName}</Typography>
                 </MenuItem>
-                <MenuItem onClick={() => dispatch(setLogout())}>
+                <MenuItem onClick={() =>{ 
+                  socket.disconnect();
+                  dispatch(setLogout());}
+                }>
                   Log Out
                 </MenuItem>
               </Select>

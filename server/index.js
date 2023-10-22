@@ -7,6 +7,7 @@ import multer from "multer";
 import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
+import User from "./models/User.js";
 import { fileURLToPath } from "url";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
@@ -70,8 +71,8 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
+    const onlineUser = new Set()
     io.on('connection', (socket) => {
-      console.log("connected")
       socket.on('chat_message', (data) => {
         console.log('Received message:', data);
         // Save the message to MongoDB
@@ -83,19 +84,28 @@ mongoose
             console.log('Message saved to the database');
           }
         });
-
         // Broadcast the message to all connected clients
-        console.log("data to"+data.sender)
-        io.emit(data.receiver, {message : data.message, sender: data.sender});
-        //io.emit(data.sender, data.message);
+        if(!onlineUser.has(data.receiver)){
+          const update = {
+            $inc: { [`Unread.${data.sender}.numberOfMessages`]: 1 },
+          };
+          const result =  User.updateOne({ _id: data.receiver}, update).catch(err=>console.log(err))  
+        }
+        else{
+          io.emit(data.receiver, {message : data.message, sender: data.sender});
+        }
       });
-
-    
-      socket.on('add-user', (data) => {
-        console.log(data)
+      socket.on('user_login',(data)=>{
+        console.log(onlineUser)
+        onlineUser.add(data.id)
       })
+      socket.on('user_logout',(data)=>{
+        onlineUser.delete(data.id)
+        console.log(onlineUser)
+      })
+
       socket.on("disconnect", (reason) => {
-        console.log("disconnect")
+        console.log("disconnect: "+socket.id);
       });
     });
 

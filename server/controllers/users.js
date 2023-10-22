@@ -61,3 +61,40 @@ export const addRemoveFriend = async (req, res) => {
     res.status(404).json({ message: err.message });
   }
 };
+
+export const getFriendOfflineMessage = async (req,res) =>{
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    res.status(200).json(user.Unread)
+  } catch(error) {
+    res.status(404).json({ message: err.message });
+  }
+}
+
+export const updateOfflineMessage = async (req,res) =>{
+  try {
+    const {id,friendId} = req.body
+    const update = {
+      $set: { [`Unread.${friendId}.numberOfMessages`]: 0 },
+    };
+    const updateRes = User.updateOne({ _id: id}, update)
+    res.status(200).json(updateRes)
+  } catch (err) {
+    res.status(400).json({message:err})
+  }
+  
+}
+
+export const incUnread = async (req,res) =>{
+  try {
+    const {id,friendId} = req.body
+    const update = {
+      $inc: { [`Unread.${friendId}.numberOfMessages`]: 1 },
+    };
+    User.updateOne({ _id: id}, update)
+    res.status(200).json(updateRes)
+  } catch (err) {
+    res.status(400).json({message:err})
+  }
+}

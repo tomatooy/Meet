@@ -1,33 +1,35 @@
-import React,{useState,useEffect,useRef} from 'react'
-import { useSelector } from 'react-redux';
+import React,{useState,useContext} from 'react'
+import {SocketContext} from 'context/socket';
+import { useSelector,useDispatch } from 'react-redux';
 import { useTheme,Typography} from '@mui/material';
-import io from "socket.io-client"
+import { setLatestMessage } from 'state/notification';
 
-const URL = process.env.NODE_ENV === 'production' ? process.env.REACT.USER.API : "http://localhost:3001"
 
-export default function ChatInput(props) {
-    const {updateMessages,currMessages} = props
+
+export default function ChatInput({updateMessages,currMessages}) {
+    const socket = useContext(SocketContext);
     const [inputMessage,setInputMessage] = useState("");
     const {receiver,sender} = useSelector((state)=>state.message)
     const theme = useTheme()
-    const socket = useRef()
-    useEffect(() => {
-        socket.current = io(URL)
-        return ()=>{socket.current.disconnect()}
-    }, []);
-    
+    const dispatch = useDispatch()
     const sendMessage = (e) => {
+        console.log(socket)
         e.preventDefault()
-        socket.current.emit('chat_message', { message: inputMessage, receiver:receiver.id,sender:sender,users:[receiver.id,sender]});
+        if(socket){
+        socket.emit('chat_message', { message: inputMessage, receiver:receiver.id,sender:sender,users:[receiver.id,sender]});
         updateMessages([...currMessages,{fromSelf:true,message: inputMessage}])
-        setInputMessage("")
+        dispatch(setLatestMessage({id:receiver.id,message:inputMessage}))
+        setInputMessage("")}
+        else{
+            throw Error("No connection")
+        }
     };
 
     return (
         <form  onSubmit={(e)=>sendMessage(e)} style={theme.message.inputArea}>
             <input type="text" placeholder="Say Hi!" value = {inputMessage} onChange={(e)=>{setInputMessage(e.target.value)}} 
-            style={{width:"90%",height:"100%",border:"2px solid #f7f7f7", outline: "none"}}></input>
-            <button type="submit" style={theme.message.inputButton} > <Typography>Send</Typography> </button>
+            style={{width:"90%",height:"100%",border:"2px solid #f7f7f7", outline: "none"}} disabled={!receiver.id}></input>
+            <button type="submit" style={theme.message.inputButton} disabled={!receiver.id}> <Typography>Send</Typography> </button>
         </form>
     )
 }

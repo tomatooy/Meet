@@ -37,7 +37,9 @@ const UserSchema = new mongoose.Schema(
     occupation: String,
     viewedProfile: Number,
     impressions: Number,
+    Unread: Object
   },
+  
   { timestamps: true }
 );
 

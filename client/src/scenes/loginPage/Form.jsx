@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useContext } from "react";
 import {
   Box,
   Button,
@@ -12,12 +12,12 @@ import { Formik } from "formik";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { setLogin } from "state";
+import { setLogin } from "state/auth";
 import Dropzone from "react-dropzone";
 import FlexBetween from "components/FlexBetween";
-import io from 'socket.io-client';
 import { setSender } from "state/message";
-
+import { SocketContext } from "context/socket";
+import { usePrefetch } from "./usePrefetch";
 const registerSchema = yup.object().shape({
   firstName: yup.string().required("required"),
   lastName: yup.string().required("required"),
@@ -49,6 +49,7 @@ const initialValuesLogin = {
 };
 
 const Form = () => {
+  //const {prefetch} = usePrefetch()
   const [pageType, setPageType] = useState("login");
   const [message, setMessage] = useState();
   const { palette } = useTheme();
@@ -89,6 +90,7 @@ const Form = () => {
     });
     const loggedIn = await loggedInResponse.json();
     if (loggedInResponse.status === 200) {
+
       dispatch(
         setLogin({
           user: loggedIn.user,
@@ -98,13 +100,7 @@ const Form = () => {
       dispatch(setSender({
         sender: loggedIn.user._id
       }));
-      const socket = io("http://localhost:3001");
-      socket.on("connect", () => {
-        console.log(socket.id)
-        if (loggedIn) {
-          socket.emit("add-user", loggedIn.user);
-        }
-      })
+      
       navigate("/home");
     }
     else {

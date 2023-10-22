@@ -160,8 +160,8 @@ export const themeSettings = (mode) => {
         borderRadius: "15px"
       },
       messageArea:{
-        maxHeight:"calc(100% - 40px)" ,
-        minHeight:"calc(100% - 40px)",
+        maxHeight:"calc(100% - 80px)" ,
+        minHeight:"calc(100% - 80px)",
         overflowY:"scroll",
         overflowX:"hidden",
         backgroundColor:'#f7f7f7',

@@ -10,7 +10,7 @@ body,
 }
 .messages::-webkit-scrollbar {
   width: 8px;
-  background: rgb(255, 255, 255);
+
 }
 .messages::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.3);

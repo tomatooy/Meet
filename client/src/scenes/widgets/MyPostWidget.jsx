@@ -23,7 +23,7 @@ import UserImage from "components/UserImage";
 import WidgetWrapper from "components/WidgetWrapper";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setPosts } from "state";
+import { setPosts } from "state/auth";
 
 const MyPostWidget = ({ picturePath }) => {
   const dispatch = useDispatch();
@@ -52,7 +52,7 @@ const MyPostWidget = ({ picturePath }) => {
       body: formData,
     });
     const posts = await response.json();
-    dispatch(setPosts({ posts }));
+    dispatch(setPosts({ posts:posts }));
     setImage(null);
     setPost("");
   };

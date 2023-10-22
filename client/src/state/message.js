@@ -1,10 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { setLogout } from "state";
+
 
 const initialMessageState = {
     sender:null,
     receiver:{id: null, icon:"",name:""},
-    something:null
   };
   
 export const messageSlice = createSlice({
@@ -19,11 +18,12 @@ export const messageSlice = createSlice({
         state.receiver.icon = action.payload.icon
         state.receiver.name = action.payload.name
       },
-      setLogout: (state,action)=>{
-        state = initialMessageState;
+      resetReceiver : (state)=>{
+        state.receiver = initialMessageState.receiver
       }
+    
     }
 
 })
-export const { setSender,setReceiver } = messageSlice.actions
+export const { setSender,setReceiver,resetReceiver } = messageSlice.actions
 export default messageSlice.reducer

@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef,useContext} from 'react'
+import {SocketContext} from 'context/socket';
 import ChatInput from './ChatInput';
-import { Box, useTheme, Typography, Container } from "@mui/material";
-import io from "socket.io-client"
-import { useSelector } from 'react-redux';
+import { Box, useTheme, Typography} from "@mui/material";
+import { useSelector,useDispatch} from 'react-redux';
 import axios from 'axios';
 import UserImage from "./UserImage";
+import { setLatestMessage } from 'state/notification';
 const URL = process.env.NODE_ENV === 'production' ? process.env.REACT.USER.API : "http://localhost:3001"
 export default function ChatMain() {
+    const  dispatch = useDispatch()
+    const socket = useContext(SocketContext);
     const theme = useTheme()
     const [arrivalMessage, setArrivalMessage] = useState()
     const from = useSelector(state => state.auth.user._id)
@@ -15,10 +18,8 @@ export default function ChatMain() {
     const userIcon = useSelector(state => state.auth.user.picturePath)
     const chatName = useSelector(state => state.message.receiver.name)
     const [messages, updateMessages] = useState([])
-    const socket = useRef()
     const messagesArea = useRef()
     const main = theme.palette.neutral.main;
-
 
     useEffect(() => {
         arrivalMessage && updateMessages([...messages, arrivalMessage]);
@@ -26,7 +27,9 @@ export default function ChatMain() {
 
 
     useEffect(() => {
-        fetchMessages().then((messages) => { updateMessages(messages) });
+        if(to){
+            fetchMessages().then((messages) => { updateMessages(messages) });
+        }
 
         // socket.current = io(URL)
         // // socket.current.on(from, (message) => {
@@ -39,14 +42,18 @@ export default function ChatMain() {
     }, [to])
 
     useEffect(() => {
-        socket.current = io(URL);
-        if (socket.current) {
-            socket.current.on(from, (data) => {
+        console.log("chat main render")
+        if (socket) {
+            socket.on(from, (data) => {
+                if(data.sender === to)
+                dispatch(setLatestMessage({id:to,message:data.message}))
                 setArrivalMessage({ fromSelf: false, message: data.message });
             });
         }
-        return () => { socket.current.disconnect(); }
-    }, []);
+        return ()=>{
+            
+        }
+    });
 
     useEffect(() => {
         handleScrollToBottom()
@@ -64,27 +71,28 @@ export default function ChatMain() {
     let prevDate = null;
     return (
         <Box sx={{ height: "100%", position: "relative" }}>
-            <Box style={theme.message.messageArea} className="messages" sx={{ backgroudColor: "transparent",padding:"0 10px" }} ref={messagesArea}>
-                <Typography
-                    color={main}
-                    variant="h5"
-                    fontWeight="500"
-                    sx={{ textAlign: "center", position: "sticky", top: "0", zIndex: '2', backgroundColor: "inherit" }}
-                >
-                    {chatName}
-                </Typography>
+            <Typography
+                color={main}
+                variant="h5"
+                fontWeight="500"
+                sx={{ textAlign: "center", position: "sticky", top: "0", zIndex: '2', backgroundColor: "white", padding: "10px",height:"40px"}}
+            >
+                {chatName} 
+            </Typography>
+
+            <Box style={theme.message.messageArea} className="messages" sx={{ backgroudColor: "transparent",padding: "10px" }} ref={messagesArea}>
 
                 {
-                    
-                    processMessages().map((e)=>{
-                        return e;
-                    })
+                    messages.length > 0 ?
+                        processMessages().map((e) => {
+                            return e;
+                        }) : <Typography style={theme.message.dateBreak} color={theme.palette.primary.main}><h1>.....</h1><h1>Start Chatting!</h1></Typography>
                 }
 
 
             </Box>
             <Box sx={{ height: "10%" }}>
-                <ChatInput currMessages={messages} updateMessages={updateMessages} style={theme.message.inputArea} />
+                <ChatInput currMessages={messages} updateMessages={updateMessages} style={theme.message.inputArea} socket={socket}/>
             </Box>
         </Box>
     )
@@ -98,7 +106,7 @@ export default function ChatMain() {
         let result = [];
         if (messages) {
             let i = 0
-            while(i < messages.length) {
+            while (i < messages.length) {
                 const line = messages[i]
                 const { date } = line;
                 const { fromSelf } = line;
@@ -119,9 +127,9 @@ export default function ChatMain() {
                     result.push(<Typography style={theme.message.dateBreak} color={theme.palette.primary.main}>{date}</Typography>)
                     continue;
                 }
-                
 
-            
+
+
                 let returnEle
                 if (fromSelf && isSameSender) {
                     returnEle =
